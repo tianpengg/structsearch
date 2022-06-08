@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Struct.Models.Dto</name>
+    </assembly>
+    <members>
+        <member name="P:Struct.Models.Dto.AddOrUpdateStructDto.ChemContent">
+            <summary>
+            入库的文本（mol、smiles、反应式）
+            </summary>
+        </member>
+        <member name="T:Struct.Models.Dto.StructBaseDto">
+            <summary>
+             整个结构式搜索Dto的父类
+            </summary>
+        </member>
+        <member name="P:Struct.Models.Dto.StructBaseDto.TableName">
+            <summary>
+            结构式所在文件名，用于多客户分开存储
+            </summary>
+        </member>
+        <member name="T:Struct.Models.Dto.StructBaseStoreDto">
+            <summary>
+            结构所仓储的父类
+            </summary>
+        </member>
+        <member name="P:Struct.Models.Dto.StructSearchExactDto.UseChirality">
+            <summary>
+            是否开启手性
+            </summary>
+        </member>
+    </members>
+</doc>

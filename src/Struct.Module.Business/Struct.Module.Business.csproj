@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Struct.Common.Utils\Struct.Common.Utils.csproj" />
+    <ProjectReference Include="..\Struct.Models.Dto\Struct.Models.Dto.csproj" />
+    <ProjectReference Include="..\Struct.Module.IBusiness\Struct.Module.IBusiness.csproj" />
+  </ItemGroup>
+
+</Project>

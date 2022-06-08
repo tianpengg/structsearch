@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>StructSearchHost</name>
+    </assembly>
+    <members>
+        <member name="M:StructSearchHost.Controllers.StructStoreController.AddStruct(Struct.Models.Dto.AddOrUpdateStructDto)">
+            <summary>
+            添加结构式
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
