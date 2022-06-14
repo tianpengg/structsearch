@@ -13,6 +13,14 @@ namespace Struct.Module.Business
 {
     public class StructSearch : IStructSearch
     {
+        /// <summary>
+        /// 数据库类型
+        /// </summary>
+        private static string _dbType = "";
+
+        private static Indigo _indigo = new Indigo();
+
+        private static string _tableName = "";
 
         #region 私有方法
         /// <summary>
@@ -35,6 +43,37 @@ namespace Struct.Module.Business
             }
         }
 
+        /// <summary>
+        /// 获取Db实例
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="chemContent"></param>
+        /// <returns></returns>
+        private static (Bingo, string) GetBingo(string tableName,string chemContent)
+        {
+            var dbType = DBTypeUtils.GetDBType(chemContent);
+            if (dbType == DBType.Molecule)
+            {
+                // 防止分子式报错
+                chemContent = ChemUtils.ReplaceChemContent(chemContent);
+            }
+            _dbType = dbType;
+            _tableName = tableName;
+
+            Bingo bingo = IndigoUtils.GetReadOnlyBingoInstance(_indigo, tableName, dbType);
+
+            return (bingo, chemContent);
+        }
+
+        /// <summary>
+        /// 执行子结构搜索
+        /// </summary>
+        /// <param name="bingo"></param>
+        /// <param name="indigo"></param>
+        /// <param name="chemContent"></param>
+        /// <param name="useChirality"></param>
+        /// <param name="dbType"></param>
+        /// <returns></returns>
         private static List<int> RunExactSearch(Bingo bingo, Indigo indigo, string chemContent, bool useChirality, string dbType)
         {
             List<int> resultList = new List<int>();
@@ -110,7 +149,114 @@ namespace Struct.Module.Business
             }
             catch (Exception ex)//无法获取结果时抛出异常
             {
+                NLogHelper.Default.Error($"在执行[tableName={_tableName}]的[chemContent={chemContent}]的精确搜索时发生异常：{ex.Message}");
+            }
 
+            return resultList;
+        }
+
+        /// <summary>
+        /// 执行子结构检索
+        /// </summary>
+        /// <param name="bingo"></param>
+        /// <param name="indigo"></param>
+        /// <param name="chemContent"></param>
+        /// <returns></returns>
+        private static List<int> RunSubSearch(Bingo bingo, Indigo indigo, string chemContent, string dbType)
+        {
+            List<int> resultList = new List<int>();
+            string smiles = "";
+            try
+            {
+                smiles = chemContent;
+                if (ChemUtils.IsMolContent(chemContent))
+                {
+                    smiles = RWMol.MolFromMolBlock(chemContent).MolToSmiles(true, true);
+                }
+
+                if (dbType == DBType.Reaction)
+                {
+                    IndigoObject queryObject = indigo.loadReactionSmarts(smiles);
+                    BingoObject bingoObject = bingo.searchSub(queryObject);
+                    while (bingoObject.next())
+                    {
+                        resultList.Add(bingoObject.getCurrentId());
+                    }
+                }
+                else
+                {
+                    IndigoObject queryObject = indigo.loadQueryMolecule(smiles);
+                    BingoObject bingoObject = bingo.searchSub(queryObject);
+                    while (bingoObject.next())
+                    {
+                        resultList.Add(bingoObject.getCurrentId());
+                    }
+                }
+
+
+            }
+            catch (Exception ex)//无法获取结果时抛出异常
+            {
+                NLogHelper.Default.Error($"在执行[tableName={_tableName}]的[chemContent={chemContent}]的子结构搜索时发生异常：{ex.Message}");
+            }
+
+            return resultList;
+        }
+
+
+        /// <summary>
+        /// 执行相似性检索
+        /// </summary>
+        /// <param name="bingo"></param>
+        /// <param name="indigo"></param>
+        /// <param name="chemContent"></param>
+        /// <param name="minPer"></param>
+        /// <param name="maxPer"></param>
+        /// <returns></returns>
+        private static List<int> RunSmiSearch(Bingo bingo, Indigo indigo, string chemContent, float minPer, float maxPer, string dbType)
+        {
+            List<int> resultList = new List<int>();
+
+            if (bingo == null)
+            {
+                return resultList;
+            }
+
+            try
+            {
+                string smiles = chemContent;
+
+                if (ChemUtils.IsMolContent(chemContent))
+                {
+                    chemContent = ChemUtils.FilterHCount(chemContent);
+                    RWMol tmol = RWMol.MolFromMolBlock(chemContent, true, false);
+                    smiles = tmol.MolToSmiles(true, true);
+                }
+
+                if (dbType == DBType.Reaction)
+                {
+                    IndigoObject queryObject = indigo.loadReactionSmarts(smiles);
+                    BingoObject bingoObject = bingo.searchSim(queryObject, minPer, maxPer);
+                    while (bingoObject.next())
+                    {
+                        resultList.Add(bingoObject.getCurrentId());
+                    }
+                }
+                else
+                {
+                    IndigoObject queryObject = indigo.loadMolecule(smiles);
+                    BingoObject bingoObject = bingo.searchSim(queryObject, minPer, maxPer);
+                    while (bingoObject.next())
+                    {
+                        resultList.Add(bingoObject.getCurrentId());
+                    }
+                }
+
+
+            }
+            catch (Exception ex)//无法获取结果时抛出异常
+            {
+                NLogHelper.Default.Error($"在执行[tableName={_tableName}]的[chemContent={chemContent},最小值={minPer},最大值={maxPer}]的子结构搜索时发生异常：{ex.Message}");
             }
 
             return resultList;
@@ -119,31 +265,43 @@ namespace Struct.Module.Business
         #endregion
         public List<int> SearchExactStruct(StructSearchExactDto model)
         {
-            var dbType = DBTypeUtils.GetDBType(model.ChemContent);
-            if (dbType == DBType.Molecule)
-            {
-                // 防止分子式报错
-                model.ChemContent = ChemUtils.ReplaceChemContent(model.ChemContent);
-            }
-            Indigo indigo = new Indigo();
-
+            (Bingo bingo, string chemContent) = GetBingo(model.TableName, model.ChemContent);
             List<int> resultList = new List<int>();
-
-            Bingo bingo = null;
-
-            if (DbPathExist(model.TableName, dbType))
-            {
-                bingo =IndigoUtils.GetReadOnlyBingoInstance(indigo, model.TableName, dbType);
-            }
-
             if (bingo != null)
             {
-                resultList = RunExactSearch(bingo, indigo, model.ChemContent, model.UseChirality, dbType);
+                resultList = RunExactSearch(bingo, _indigo, chemContent, model.UseChirality, _dbType);
                 bingo.close();
             }
 
             return resultList;
         }
 
+        public List<int> SearchSmiStruct(StructSearchSmiDto model)
+        {
+            (Bingo bingo,string chemContent) = GetBingo(model.TableName, model.ChemContent);
+            List<int> resultList = new List<int>();
+            if (bingo!= null)
+            {
+                resultList = RunSmiSearch(bingo, _indigo, chemContent, model.MinPer, model.MaxPer, _dbType);
+                bingo.close();
+            }
+
+            return resultList;
+
+
+        }
+
+        public List<int> SearchSubStruct(StructSearchSubDto model)
+        {
+            (Bingo bingo, string chemContent) = GetBingo(model.TableName, model.ChemContent);
+            List<int> resultList = new List<int>();
+            if (bingo != null)
+            {
+                resultList = RunSubSearch(bingo, _indigo, model.ChemContent, _dbType);
+                bingo.close();
+            }
+
+            return resultList;
+        }
     }
 }

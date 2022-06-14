@@ -55,7 +55,7 @@ namespace Struct.Module.Business
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(ex.Message);
+                        NLogHelper.Default.Error($"在执行[tableName={model.TableName}]的[chemContent={model.ChemContent}]的插入操作时发生异常：{ex.Message}");
                         result = false;
                     }
                     finally
@@ -72,7 +72,7 @@ namespace Struct.Module.Business
         public bool UpdateStruct(AddOrUpdateStructDto model)
         {
             /*
-             * 这里的更新操作，先删除再修改
+             * 这里的更新操作，先删除再插入
              */
             //TODO
 

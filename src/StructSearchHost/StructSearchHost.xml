@@ -4,6 +4,27 @@
         <name>StructSearchHost</name>
     </assembly>
     <members>
+        <member name="M:StructSearchHost.Controllers.StructSearchController.SearchExactStruct(Struct.Models.Dto.StructSearchExactDto)">
+            <summary>
+            精确搜索
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:StructSearchHost.Controllers.StructSearchController.SearchSubStruct(Struct.Models.Dto.StructSearchSubDto)">
+            <summary>
+            子结构搜索
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:StructSearchHost.Controllers.StructSearchController.SearchSmiStruct(Struct.Models.Dto.StructSearchSmiDto)">
+            <summary>
+            相似度搜索
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="M:StructSearchHost.Controllers.StructStoreController.AddStruct(Struct.Models.Dto.AddOrUpdateStructDto)">
             <summary>
             添加结构式

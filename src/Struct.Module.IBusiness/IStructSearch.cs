@@ -13,5 +13,19 @@ namespace Struct.Module.IBusiness
         /// <param name="model"></param>
         /// <returns></returns>
         List<int> SearchExactStruct(StructSearchExactDto model);
+
+        /// <summary>
+        /// 子结构搜索
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        List<int> SearchSubStruct(StructSearchSubDto model);
+
+        /// <summary>
+        /// 相似度
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        List<int> SearchSmiStruct(StructSearchSmiDto model);
     }
 }

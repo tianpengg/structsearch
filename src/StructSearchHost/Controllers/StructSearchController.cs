@@ -27,7 +27,28 @@ namespace StructSearchHost.Controllers
         public List<int> SearchExactStruct(StructSearchExactDto model)
         {
             return _structSearch.SearchExactStruct(model);
-            
+        }
+
+        /// <summary>
+        /// 子结构搜索
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public List<int> SearchSubStruct(StructSearchSubDto model)
+        {
+            return _structSearch.SearchSubStruct(model);
+        }
+
+        /// <summary>
+        /// 相似度搜索
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public List<int> SearchSmiStruct(StructSearchSmiDto model)
+        {
+            return _structSearch.SearchSmiStruct(model);
         }
     }
 }
